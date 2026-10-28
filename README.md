@@ -62,7 +62,7 @@ footnote.
           reports/category_profile.csv    the full per-category table
 ```
 
-Each stage is a module under `src/dcwp_pipeline/`, and the stages are
+Each stage is a module under `src/nyc_complaints_etl/`, and the stages are
 separately callable from the CLI: the quality gate can be run on its own, and
 the transforms and analysis re-run on the cached extract without touching the
 API.
@@ -123,12 +123,12 @@ Without `make`:
 
 ```bash
 uv sync
-uv run dcwp-pipeline run --max-rows 5000
-uv run dcwp-pipeline run
+uv run nyc-complaints-etl run --max-rows 5000
+uv run nyc-complaints-etl run
 uv run pytest
 ```
 
-The CLI is a console script, so `uv run dcwp-pipeline --help` lists every
+The CLI is a console script, so `uv run nyc-complaints-etl --help` lists every
 flag, including the ones with no Make target: `--cached` to re-run analysis on
 the cached extract without touching the API, `validate` to run the quality gate
 on its own, and `--ignore-quality-failures`.
@@ -270,7 +270,7 @@ pyproject.toml                project metadata, dependencies, console script
 uv.lock                       pinned dependency graph, committed for reproducibility
 Makefile                      setup, run, test, report - all through `uv`
 config/pipeline.json          datasets + quality rules, as data
-src/dcwp_pipeline/
+src/nyc_complaints_etl/
   socrata.py                  paged API reader with retry and backoff
   quality.py                  declarative data-quality framework
   transform.py                cleaning, outcome taxonomy, the business bridge

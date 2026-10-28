@@ -1,6 +1,6 @@
 import pandas as pd
 
-from dcwp_pipeline.quality import run_checks
+from nyc_complaints_etl.quality import run_checks
 
 
 def _frames():

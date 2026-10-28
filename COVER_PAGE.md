@@ -51,9 +51,9 @@ footnote.
 
 | | |
 |---|---|
-| `src/dcwp_pipeline/quality.py` | The declarative data-quality framework. Checks are configuration, not scattered assertions. |
-| `src/dcwp_pipeline/transform.py` | The outcome taxonomy — the one genuinely substantive modelling judgement, written to be argued with. |
-| `src/dcwp_pipeline/analysis.py` | Wilson intervals and why ranking uses the lower bound. |
+| `src/nyc_complaints_etl/quality.py` | The declarative data-quality framework. Checks are configuration, not scattered assertions. |
+| `src/nyc_complaints_etl/transform.py` | The outcome taxonomy — the one genuinely substantive modelling judgement, written to be argued with. |
+| `src/nyc_complaints_etl/analysis.py` | Wilson intervals and why ranking uses the lower bound. |
 | `README.md` → *What the quality gate caught* | Three real data defects the pipeline caught on its first run, and what each turned out to be. |
 | `sql/02_analysis.sql` | The same questions in SQL, for independent interrogation of the warehouse. |
 

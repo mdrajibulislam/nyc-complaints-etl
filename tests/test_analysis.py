@@ -3,7 +3,7 @@ import math
 import pandas as pd
 import pytest
 
-from dcwp_pipeline import analysis
+from nyc_complaints_etl import analysis
 
 
 def test_wilson_interval_brackets_the_point_estimate():

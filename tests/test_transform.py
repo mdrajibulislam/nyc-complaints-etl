@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from dcwp_pipeline import transform
+from nyc_complaints_etl import transform
 
 
 def test_classify_result_covers_each_bucket():

@@ -1,9 +1,9 @@
 """Command-line entry point.
 
-    dcwp-pipeline run                  # full pipeline
-    dcwp-pipeline extract              # refresh the cached extract only
-    dcwp-pipeline run --cached         # skip the API, use the cache
-    dcwp-pipeline run --max-rows 5000  # quick smoke run
+    nyc-complaints-etl run                  # full pipeline
+    nyc-complaints-etl extract              # refresh the cached extract only
+    nyc-complaints-etl run --cached         # skip the API, use the cache
+    nyc-complaints-etl run --max-rows 5000  # quick smoke run
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ def configure_logging(verbose: bool) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="dcwp-pipeline",
+        prog="nyc-complaints-etl",
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

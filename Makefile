@@ -11,7 +11,7 @@ setup:
 # make run           full extract from the live API, ~60s
 # make run ROWS=5000 truncated run, ~30s, for a quick end-to-end check
 run: setup
-	$(UV) run dcwp-pipeline run $(if $(ROWS),--max-rows $(ROWS))
+	$(UV) run nyc-complaints-etl run $(if $(ROWS),--max-rows $(ROWS))
 
 test: setup
 	$(UV) run pytest
