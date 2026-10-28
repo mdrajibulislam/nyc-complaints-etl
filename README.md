@@ -81,7 +81,7 @@ largest such gap in the data. Full numbers in [Findings](#findings).
 ## Download
 
 ```bash
-git clone https://github.com/<your-handle>/nys-code-sample.git
+git clone https://github.com/mdrajibulislam/nys-code-sample.git
 cd nys-code-sample
 ```
 
