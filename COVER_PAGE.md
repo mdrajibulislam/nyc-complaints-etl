@@ -59,14 +59,21 @@ footnote.
 
 ## Running it
 
+The project is managed with [uv](https://docs.astral.sh/uv/), so a clean clone
+needs no Python setup — `make` handles the virtualenv and dependencies.
+
 ```bash
-pip install -r requirements.txt
-make smoke     # ~30s, 5,000 rows per source
+git clone https://github.com/<your-handle>/nys-code-sample.git
+cd nys-code-sample
+
+make smoke     # ~30s, 5,000 rows per source, end to end
 make run       # ~60s, full extract from the live API
 make test      # 20 unit tests
+make sql       # the same questions in SQL, against the warehouse
 ```
 
-No API key required.
+No API key required. `uv.lock` is committed, so the dependency graph is
+identical to the one these results were produced on.
 
 ## Scope and honesty
 

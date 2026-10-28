@@ -13,20 +13,67 @@ reports is descriptive. The limitations are stated next to the numbers.
 
 ---
 
-## Quick start
+## Download
 
 ```bash
-pip install -r requirements.txt
-
-make smoke    # 5,000 rows per source, end to end, ~30 seconds
-make run      # full extract from the live API, ~60 seconds
-make cached   # re-run transforms and analysis on the cached extract
-make test     # 20 unit tests, ~0.5 seconds
+git clone https://github.com/<your-handle>/nys-code-sample.git
+cd nys-code-sample
 ```
 
-No API key is required. Set `SOCRATA_APP_TOKEN` to avoid anonymous throttling.
+## Requirements
 
-Outputs land in `reports/`:
+- **[uv](https://docs.astral.sh/uv/)** — handles Python, the virtualenv and
+  every dependency. Nothing else needs installing, not even Python itself.
+- **sqlite3** — only for `make sql`. Ships with macOS and most Linux distros.
+
+```bash
+# install uv, if you don't have it
+curl -LsSf https://astral.sh/uv/install.sh | sh     # macOS / Linux
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"   # Windows
+```
+
+No API key is required. Set `SOCRATA_APP_TOKEN` to avoid anonymous throttling
+on the NYC Open Data API.
+
+## Run it
+
+Every target creates the virtualenv and installs locked dependencies on first
+use, so `make smoke` on a clean clone is enough to see the whole thing work.
+
+```bash
+make smoke      # 5,000 rows per source, end to end          ~30s  ← start here
+make run        # full extract from the live API, 222k rows  ~60s
+make test       # 20 unit tests
+```
+
+| Target | What it does |
+|---|---|
+| `make install` | `uv sync` — create `.venv`, install locked dependencies |
+| `make smoke` | Truncated end-to-end run. Volume checks drop to `warn`; everything else is enforced |
+| `make run` | Full pipeline: extract → validate → transform → warehouse → report |
+| `make cached` | Re-run transforms and analysis on the cached extract, no API calls |
+| `make validate` | Extract and run the quality gate only, nothing written |
+| `make test` | `uv run pytest` |
+| `make sql` | Run `sql/02_analysis.sql` against the warehouse |
+| `make clean` | Remove cached data, warehouse and reports |
+| `make distclean` | `clean`, plus `.venv` and caches |
+
+Without `make`, every target is a one-liner:
+
+```bash
+uv sync
+uv run dcwp-pipeline run --max-rows 5000
+uv run dcwp-pipeline run
+uv run pytest
+```
+
+The CLI is also installed as a console script, so after `uv sync` you can use
+`uv run dcwp-pipeline --help` for the full flag list, including
+`--ignore-quality-failures` and `--verbose`.
+
+### Outputs
+
+Written to `reports/`:
 
 | File | Contents |
 |---|---|
@@ -157,6 +204,9 @@ three-quarters of those complaints never reach a decision either way.
 ## Layout
 
 ```
+pyproject.toml                project metadata, dependencies, console script
+uv.lock                       pinned dependency graph, committed for reproducibility
+Makefile                      every target wraps `uv run`
 config/pipeline.json          datasets + quality rules, as data
 src/dcwp_pipeline/
   socrata.py                  paged API reader with retry and backoff
@@ -182,6 +232,9 @@ tests/                        20 unit tests
 - **Extracts cache as CSV, not Parquet.** A reviewer can open them in anything.
 - **Thresholds are parameters.** `min_complaints_per_category` is a judgement
   call, so it lives in config where it can be changed and re-run.
+- **`uv.lock` is committed.** A reviewer running this next month gets the same
+  dependency graph I did, which is the difference between a reproducible
+  result and a story about one.
 
 ---
 

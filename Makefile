@@ -1,26 +1,44 @@
-PY ?= python3
-export PYTHONPATH := src
+# Every target runs through `uv`, which creates the virtualenv and installs
+# the locked dependencies on first use. There is no separate install step.
+UV ?= uv
 
-.PHONY: help smoke run cached test clean
+.PHONY: help install smoke run cached validate test sql clean distclean
 
 help:
-	@echo "make smoke   - 5k rows per source, end to end (~30s)"
-	@echo "make run     - full pipeline against the live API (~2-3 min)"
-	@echo "make cached  - rerun transforms/analysis on the cached extract"
-	@echo "make test    - unit tests"
-	@echo "make clean   - remove cached data, warehouse and reports"
+	@echo "make install  - create .venv and install locked dependencies"
+	@echo "make smoke    - 5,000 rows per source, end to end  (~30s)"
+	@echo "make run      - full extract from the live API      (~60s)"
+	@echo "make cached   - re-run transforms/analysis on the cached extract"
+	@echo "make validate - extract and run the quality gate only"
+	@echo "make test     - unit tests"
+	@echo "make sql      - run sql/02_analysis.sql against the warehouse"
+	@echo "make clean    - remove cached data, warehouse and reports"
 
-smoke:
-	$(PY) -m dcwp_pipeline run --max-rows 5000
+install:
+	$(UV) sync
 
-run:
-	$(PY) -m dcwp_pipeline run
+smoke: install
+	$(UV) run dcwp-pipeline run --max-rows 5000
 
-cached:
-	$(PY) -m dcwp_pipeline run --cached
+run: install
+	$(UV) run dcwp-pipeline run
 
-test:
-	$(PY) -m pytest -q
+cached: install
+	$(UV) run dcwp-pipeline run --cached
+
+validate: install
+	$(UV) run dcwp-pipeline validate
+
+test: install
+	$(UV) run pytest
+
+sql:
+	@test -f data/warehouse/dcwp.db || { echo "No warehouse yet - run 'make run' first."; exit 1; }
+	sqlite3 data/warehouse/dcwp.db < sql/02_analysis.sql
 
 clean:
 	rm -f data/raw/*.csv data/warehouse/*.db reports/*
+
+distclean: clean
+	rm -rf .venv .pytest_cache
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +
