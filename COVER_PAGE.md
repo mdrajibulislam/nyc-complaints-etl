@@ -3,7 +3,7 @@
 **Submitted by:** MD Rajibul Islam
 **For:** Data Scientist, Research and Analytics Department, Office of the New York State Attorney General
 **Reference No.:** RAD_NYC_DAS_6463
-**Repository:** https://github.com/mdrajibulislam/nys-code-sample
+**Repository:** https://github.com/mdrajibulislam/nyc-complaints-etl
 
 ---
 
@@ -63,8 +63,8 @@ The project is managed with [uv](https://docs.astral.sh/uv/), so a clean clone
 needs no Python setup — `make` handles the virtualenv and dependencies.
 
 ```bash
-git clone https://github.com/mdrajibulislam/nys-code-sample.git
-cd nys-code-sample
+git clone https://github.com/mdrajibulislam/nyc-complaints-etl.git
+cd nyc-complaints-etl
 
 make run ROWS=5000   # ~30s, truncated end to end
 make run             # ~60s, full extract from the live API
