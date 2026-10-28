@@ -1,15 +1,80 @@
 # NYC consumer complaints: where cases stop short of a decision
 
-An ETL and analysis pipeline over two public NYC Open Data datasets, built to
-answer one narrow question carefully.
+A Python ETL and analysis pipeline over two public NYC Open Data datasets. It
+pulls 222,433 records from the city's Socrata API, puts them through a
+declarative quality gate, loads a small SQLite warehouse, and ranks business
+categories by how often a consumer complaint ends with no decision on the
+merits either way.
+
+It runs end to end in about a minute from a clean clone, needs no API key, and
+touches no private individuals — both datasets are about registered
+businesses.
+
+Written as a code sample for an application to the NYS Office of the Attorney
+General, Research and Analytics Department (Ref. RAD_NYC_DAS_6463).
+
+## The question
 
 > Do consumer complaints to the NYC Department of Consumer and Worker
 > Protection (DCWP) end without a decision on the merits at materially
 > different rates across business categories, and is a category's enforcement
 > footprint proportional to the complaints it generates?
 
-**This repository produces a screening output, not a finding.** Everything it
-reports is descriptive. The limitations are stated next to the numbers.
+DCWP closes every complaint with one of 34 result codes. Some mean the consumer
+got their money back. Some mean the business was found not to owe anything. And
+some mean nobody ever found out, because the paperwork was incomplete or the
+complainant stopped answering the phone. That last group is the interesting
+one: it is a complaint the city took in and never answered, and its share
+varies a great deal by what kind of business is involved.
+
+**This produces a screening output, not a finding.** Everything it reports is
+descriptive, and the limitations sit next to the numbers rather than in a
+footnote.
+
+## How it works
+
+```
+                      NYC Open Data  (Socrata API, no key required)
+          ┌──────────────────────────┐    ┌──────────────────────────┐
+          │ Consumer Complaints      │    │ Charges                  │
+          │ nre2-6m2s       79,287   │    │ 5fn4-dr26      143,146   │
+          └────────────┬─────────────┘    └────────────┬─────────────┘
+                       └─────────────┬─────────────────┘
+                                     │
+      EXTRACT     paged 50k at a time, retried with backoff, cached as CSV
+                                     │
+     VALIDATE     18 declared checks from config/pipeline.json
+                                     │      error → stop, publish nothing
+                                     │      warn  → record it, carry on
+                                     │
+    TRANSFORM     34 result codes  →  4 outcome buckets
+                  dedupe each table to its real grain
+                  join the two sources on business_unique_id
+                                     │
+         LOAD     SQLite warehouse, 5 tables + indexes
+                                     │
+      ANALYSE     Wilson 95% intervals on every rate
+                  rank by the interval's lower bound, not the point estimate
+                                     │
+                                     ▼
+          reports/findings.md    ranked screening report
+          reports/data_quality.md    every check, threshold and result
+          reports/category_profile.csv    the full per-category table
+```
+
+Each stage is a module under `src/dcwp_pipeline/`, and the stages are
+separately callable from the CLI: the quality gate can be run on its own, and
+the transforms and analysis re-run on the cached extract without touching the
+API.
+
+## What it found
+
+40.0% of complaints across 63 analysable categories close for administrative
+reasons rather than on the merits. **Tow truck companies** are the outlier:
+3rd-highest complaint volume in the city at 5,864, a 74.5% administrative
+closure rate (1.87× the baseline, 95% CI 73.4–75.6%), and only 2.1 enforcement
+cases per 100 complaints. High volume, high attrition, low enforcement — the
+largest such gap in the data. Full numbers in [Findings](#findings).
 
 ---
 
@@ -241,6 +306,3 @@ A few days' work, not a production system: no orchestration, no incremental
 loading, no CI. The statistical content is deliberately modest — proportions
 with interval estimates and an explicit refusal to make causal claims the data
 cannot support.
-
-Written for an application to the NYS Office of the Attorney General,
-Research and Analytics Department (Ref. RAD_NYC_DAS_6463). Public data only.
