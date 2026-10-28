@@ -1,0 +1,21 @@
+{
+  "categories": {
+    "categories": 63,
+    "complaints": 77842,
+    "baseline_admin_rate": 0.3997,
+    "highest_admin_category": "Tow Truck Company",
+    "highest_admin_rate": 0.7454,
+    "lowest_admin_category": "General Vendor",
+    "lowest_admin_rate": 0.0376
+  },
+  "businesses": {
+    "businesses": 63674,
+    "ever_charged": 3392,
+    "ever_charged_rate": 0.0533,
+    "ever_charged_ci": [
+      0.0516,
+      0.055
+    ],
+    "complaints_covered": 76618
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "generated_at": "2026-10-28T02:33:19+00:00",
+  "ok": true,
+  "total_checks": 18,
+  "errors": 0,
+  "warnings": 0,
+  "results": [
+    {
+      "table": "complaints",
+      "check": "row_count_min",
+      "column": null,
+      "severity": "error",
+      "passed": true,
+      "observed": 79287,
+      "threshold": 50000,
+      "message": "complaints has 79287 rows (minimum 50000)"
+    },
+    {
+      "table": "complaints",
+      "check": "unique",
+      "column": "record_id",
+      "severity": "warn",
+      "passed": true,
+      "observed": 137,
+      "threshold": 300,
+      "message": "complaints.record_id has 137 duplicate values (max 300)"
+    },
+    {
+      "table": "complaints",
+      "check": "not_null",
+      "column": "record_id",
+      "severity": "error",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "complaints.record_id null rate 0.00% (max 0.00%)"
+    },
+    {
+      "table": "complaints",
+      "check": "not_null",
+      "column": "intake_date",
+      "severity": "error",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.01,
+      "message": "complaints.intake_date null rate 0.00% (max 1.00%)"
+    },
+    {
+      "table": "complaints",
+      "check": "not_null",
+      "column": "business_unique_id",
+      "severity": "warn",
+      "passed": true,
+      "observed": 0.032,
+      "threshold": 0.05,
+      "message": "complaints.business_unique_id null rate 3.20% (max 5.00%)"
+    },
+    {
+      "table": "complaints",
+      "check": "not_null",
+      "column": "business_category",
+      "severity": "warn",
+      "passed": true,
+      "observed": 0.0176,
+      "threshold": 0.02,
+      "message": "complaints.business_category null rate 1.76% (max 2.00%)"
+    },
+    {
+      "table": "complaints",
+      "check": "date_not_future",
+      "column": "intake_date",
+      "severity": "error",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "0.00% of complaints.intake_date are in the future"
+    },
+    {
+      "table": "complaints",
+      "check": "date_not_future",
+      "column": "result_date",
+      "severity": "warn",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "0.00% of complaints.result_date are in the future"
+    },
+    {
+      "table": "charges",
+      "check": "row_count_min",
+      "column": null,
+      "severity": "error",
+      "passed": true,
+      "observed": 143146,
+      "threshold": 100000,
+      "message": "charges has 143146 rows (minimum 100000)"
+    },
+    {
+      "table": "charges",
+      "check": "unique_composite",
+      "column": "record_id + charge",
+      "severity": "error",
+      "passed": true,
+      "observed": 7,
+      "threshold": 20,
+      "message": "charges has 7 duplicate (record_id + charge) rows (max 20)"
+    },
+    {
+      "table": "charges",
+      "check": "not_null",
+      "column": "record_id",
+      "severity": "error",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "charges.record_id null rate 0.00% (max 0.00%)"
+    },
+    {
+      "table": "charges",
+      "check": "not_null",
+      "column": "business_unique_id",
+      "severity": "error",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "charges.business_unique_id null rate 0.00% (max 0.00%)"
+    },
+    {
+      "table": "charges",
+      "check": "numeric_range",
+      "column": "charge_count",
+      "severity": "error",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "0.00% of charges.charge_count fall outside [0, 100000]"
+    },
+    {
+      "table": "charges",
+      "check": "numeric_range",
+      "column": "charge_count",
+      "severity": "warn",
+      "passed": true,
+      "observed": 0.0004,
+      "threshold": 0.01,
+      "message": "0.04% of charges.charge_count fall outside [0, 500]"
+    },
+    {
+      "table": "charges",
+      "check": "numeric_range",
+      "column": "guilty",
+      "severity": "error",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "0.00% of charges.guilty fall outside [0, 100000]"
+    },
+    {
+      "table": "charges",
+      "check": "referential_integrity",
+      "column": "business_unique_id",
+      "severity": "warn",
+      "passed": true,
+      "observed": 0.8208,
+      "threshold": 1.0,
+      "message": "82.08% of charges.business_unique_id have no match in complaints.business_unique_id"
+    },
+    {
+      "table": "charges",
+      "check": "accepted_values",
+      "column": "outcome",
+      "severity": "warn",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "charges.outcome has 0.00% values outside ['Charges Withdrawn', 'Decision Dismissed', 'Default Decision', 'Hearing Decision', 'Pleaded', 'Settlement (Post Hearing)', 'Settlement (Pre-Hearing)']"
+    },
+    {
+      "table": "charges",
+      "check": "date_not_future",
+      "column": "violation_date",
+      "severity": "warn",
+      "passed": true,
+      "observed": 0.0,
+      "threshold": 0.0,
+      "message": "0.00% of charges.violation_date are in the future"
+    }
+  ]
+}
