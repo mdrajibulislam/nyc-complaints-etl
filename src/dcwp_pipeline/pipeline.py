@@ -1,4 +1,4 @@
-"""Pipeline orchestration: extract, validate, transform, load, analyse."""
+"""Orchestration: extract, validate, transform, load, analyse."""
 
 from __future__ import annotations
 
@@ -43,11 +43,10 @@ def load_config(path: Path) -> dict:
 
 
 def extract(config: dict, paths: Paths, max_rows: int | None = None) -> dict[str, pd.DataFrame]:
-    """Pull each configured source and cache it as Parquet-free CSV.
+    """Pull each configured source and cache it as CSV.
 
-    CSV rather than Parquet on purpose: a reviewer can open the cached extract
-    in any tool without installing anything, which matters more here than the
-    file size.
+    CSV rather than Parquet on purpose - a reviewer can open the cache in
+    anything, which matters more here than the file size.
     """
     client = SocrataClient()
     frames: dict[str, pd.DataFrame] = {}
@@ -86,12 +85,11 @@ def validate(
     paths: Paths,
     sampled: bool = False,
 ) -> QualityReport:
-    """Run the declared rules. ``sampled`` relaxes volume floors only.
+    """Run the declared rules. `sampled` relaxes volume floors only.
 
-    A deliberately truncated extract cannot satisfy a row-count minimum, so in
-    sample mode those checks drop to ``warn``. Every other rule still applies
-    at full strength, and the relaxation is logged rather than silent - a
-    quality gate that quietly weakens itself is worse than none.
+    A truncated extract can't meet a row-count minimum, so those checks drop to
+    warn in sample mode. Everything else still applies, and the relaxation is
+    logged - a gate that quietly weakens itself is worse than no gate.
     """
     rules = config["quality_rules"]
     if sampled:

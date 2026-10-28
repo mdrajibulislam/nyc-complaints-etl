@@ -1,25 +1,15 @@
-"""Hypothesis generation with explicit uncertainty bounds.
+"""Category screening with explicit uncertainty.
 
-The screening question:
+The question: do complaints to DCWP die on process rather than merits at
+materially different rates across business categories, and does a category's
+enforcement footprint track the complaints it generates?
 
-    Do consumer complaints to DCWP die on process rather than merits at
-    materially different rates across business categories, and is a category's
-    enforcement footprint proportional to the complaints it generates?
-
-Two cautions drive the implementation.
-
-1.  **Rates on small denominators are not comparable to rates on large ones.**
-    A category with 11 complaints and 6 administrative closures has a 55% rate
-    and tells us nothing. Every rate here carries a Wilson score interval, and
-    the ranking uses the interval's lower bound so a category only surfaces
-    when even the pessimistic reading is high.
-
-2.  **This is descriptive, not causal.** A high administrative-closure rate is
-    consistent with a category where complainants are harder to reach, with
-    complaints that are weaker on arrival, with businesses that stonewall, or
-    with uneven casework. Nothing here distinguishes those. The output is a
-    list of places worth looking - a hypothesis - and says so wherever it is
-    written out.
+Two cautions shape the code. Rates on small denominators aren't comparable to
+rates on large ones - 6 of 11 complaints is 55% and tells you nothing - so
+every rate carries a Wilson interval and ranking uses the lower bound. And
+none of this is causal: a high administrative rate fits hard-to-reach
+complainants, weak complaints, stonewalling businesses and uneven casework
+equally well. The output is a list of places worth looking, and says so.
 """
 
 from __future__ import annotations
@@ -34,9 +24,8 @@ Z_95 = 1.959963985
 def wilson_interval(successes: int, trials: int, z: float = Z_95) -> tuple[float, float]:
     """Wilson score interval for a binomial proportion.
 
-    Preferred over the normal approximation: it stays inside [0, 1] and behaves
-    sensibly when ``successes`` is 0 or equals ``trials``, both common in the
-    long tail of small categories.
+    Better than the normal approximation here: it stays inside [0, 1] and still
+    behaves when successes is 0 or equals trials, both common in the long tail.
     """
     if trials <= 0:
         return (0.0, 0.0)
@@ -51,11 +40,11 @@ def wilson_interval(successes: int, trials: int, z: float = Z_95) -> tuple[float
 
 
 def _add_rate(df: pd.DataFrame, successes: str, trials: str, prefix: str) -> pd.DataFrame:
-    """Attach point estimate and 95% Wilson bounds for successes/trials."""
+    """Point estimate plus 95% Wilson bounds for successes/trials."""
     bounds = df.apply(
         lambda r: wilson_interval(int(r[successes]), int(r[trials])), axis=1, result_type="expand"
     )
-    # Zero trials yields NaN rather than a divide-by-zero or a misleading 0.0.
+    # Zero trials gives NaN, not a divide-by-zero and not a misleading 0.0.
     trials_safe = df[trials].astype(float).where(df[trials].astype(float) > 0)
     df[f"{prefix}_rate"] = df[successes].astype(float) / trials_safe
     df[f"{prefix}_ci_low"] = bounds[0]
@@ -66,10 +55,10 @@ def _add_rate(df: pd.DataFrame, successes: str, trials: str, prefix: str) -> pd.
 def category_profile(
     complaints: pd.DataFrame, charges: pd.DataFrame, min_complaints: int = 100
 ) -> pd.DataFrame:
-    """Per-category rates with uncertainty, filtered to analysable volume.
+    """Per-category rates with uncertainty, above a volume floor.
 
-    ``min_complaints`` is a parameter, not a constant, because the right floor
-    is a judgement a reviewer should be able to change and re-run.
+    min_complaints is a parameter, not a constant: the right floor is a
+    judgement someone should be able to change and re-run.
     """
     df = complaints.merge(charges, on="business_category", how="left")
     for col in ("charge_records", "businesses_charged", "counts_charged", "counts_guilty", "adverse_records"):
@@ -93,9 +82,8 @@ def category_profile(
     df["baseline_admin_rate"] = overall_admin
     df["admin_vs_baseline"] = df["admin_rate"] / overall_admin if overall_admin else pd.NA
 
-    # The enforcement gap: categories that generate a lot of complaints but
-    # comparatively few charges. Rank distance is used rather than a ratio so
-    # that categories with zero charges do not divide by zero.
+    # Enforcement gap: lots of complaints, comparatively few charges. Rank
+    # distance rather than a ratio, so zero-charge categories don't blow up.
     df["rank_complaints"] = df["complaints"].rank(ascending=False, method="min")
     df["rank_enforcement"] = df["charges_per_100_complaints"].rank(ascending=False, method="min")
     df["enforcement_gap"] = df["rank_enforcement"] - df["rank_complaints"]

@@ -14,7 +14,7 @@ def test_classify_result_covers_each_bucket():
 
 
 def test_result_buckets_do_not_overlap():
-    """A result in two buckets would be silently counted twice."""
+    """A result in two buckets gets counted twice."""
     buckets = [
         transform.RELIEF_RESULTS,
         transform.NO_RELIEF_RESULTS,
@@ -44,13 +44,13 @@ def test_clean_complaints_dedupes_and_derives():
 
     assert len(out) == 2, "duplicate record_id should collapse"
     assert out.loc[out.record_id == "1", "days_to_result"].iloc[0] == 10
-    # result_date before intake_date is a data error, not a 31-day turnaround.
+    # result_date before intake_date is an error, not a 31-day turnaround.
     assert pd.isna(out.loc[out.record_id == "2", "days_to_result"].iloc[0])
     assert out.loc[out.record_id == "2", "business_category"].iloc[0] == "Unknown"
 
 
 def test_clean_charges_caps_guilty_at_charge_count():
-    """`guilty` is a count of counts; it can never exceed charge_count."""
+    """`guilty` is a count of counts, so it can never exceed charge_count."""
     raw = pd.DataFrame(
         {
             "record_id": ["1", "2"],

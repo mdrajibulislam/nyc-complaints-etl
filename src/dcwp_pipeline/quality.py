@@ -1,13 +1,11 @@
-"""A small declarative data-quality framework.
+"""Declarative data-quality checks.
 
-Checks are declared as data (see ``config/pipeline.json``) rather than written
-as one-off assertions, so a reviewer can see every rule the pipeline enforces
-in one place and add a rule without touching Python.
+Rules are data (config/pipeline.json), not scattered assertions, so every rule
+the pipeline enforces is visible in one place and adding one needs no Python.
 
-Each check returns a :class:`CheckResult`. Results at ``error`` severity fail
-the run; ``warn`` results are recorded and reported but do not stop the
-pipeline. The distinction matters on public data, where a handful of malformed
-rows is normal and a 40% null rate in a key column is not.
+Checks return a CheckResult. An error fails the run; a warn is recorded and
+reported. That split matters on public data, where a few malformed rows is
+normal and a 40% null rate in a join key is not.
 """
 
 from __future__ import annotations
@@ -92,9 +90,7 @@ class QualityReport:
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-# --------------------------------------------------------------------------
-# Individual check implementations
-# --------------------------------------------------------------------------
+# --- checks ---------------------------------------------------------------
 
 def _row_count_min(df: pd.DataFrame, spec: dict, table: str) -> CheckResult:
     threshold = spec["min"]
@@ -158,7 +154,7 @@ def _accepted_values(df: pd.DataFrame, spec: dict, table: str) -> CheckResult:
 
 
 def _unique_composite(df: pd.DataFrame, spec: dict, table: str) -> CheckResult:
-    """Uniqueness across a column set, for tables whose grain is composite."""
+    """Uniqueness across a column set, for composite-grain tables."""
     columns = spec["columns"]
     label = " + ".join(columns)
     missing = [c for c in columns if c not in df.columns]

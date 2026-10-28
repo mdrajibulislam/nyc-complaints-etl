@@ -13,11 +13,11 @@ def test_wilson_interval_brackets_the_point_estimate():
 
 
 def test_wilson_interval_is_wider_on_small_samples():
-    """The whole reason we rank on the lower bound."""
+    """The whole reason ranking uses the lower bound."""
     small_low, small_high = analysis.wilson_interval(3, 4)
     large_low, large_high = analysis.wilson_interval(750, 1000)
     assert (small_high - small_low) > (large_high - large_low)
-    # 75% of 4 must NOT outrank 75% of 1000 on the lower bound.
+    # 75% of 4 must not outrank 75% of 1000 on the lower bound.
     assert small_low < large_low
 
 
@@ -78,7 +78,7 @@ def test_category_profile_fills_missing_charges_with_zero():
 def test_relief_rate_uses_substantive_denominator_not_all_complaints():
     profile = analysis.category_profile(_complaints_frame(), _charges_frame(), min_complaints=100)
     big = profile.set_index("business_category").loc["Big"]
-    # 60 relief out of 100 substantive, NOT out of 1000 complaints.
+    # 60 relief out of 100 substantive, not out of 1000 complaints.
     assert math.isclose(big["relief_rate"], 0.6, rel_tol=1e-9)
 
 

@@ -1,29 +1,18 @@
-"""Transformations from raw DCWP records into the analytic model.
+"""Raw DCWP records into the analytic model.
 
-The substantive modelling decision in this file is the outcome taxonomy below.
-DCWP records 34 distinct ``result`` values on consumer complaints, and they do
-not mean comparable things: "Cash Amount - AMT" is a consumer getting money
-back, while "Requested Information Not Provided" is a case dying because the
-consumer stopped replying. Collapsing all 34 into a single "resolved" rate
-would produce a number that looks precise and means nothing.
+The one real modelling decision here is the outcome taxonomy below. DCWP uses
+34 distinct `result` values and they don't mean comparable things: "Cash
+Amount - AMT" is the consumer getting money back, "Requested Information Not
+Provided" is the case dying because they stopped replying. Rolling all 34 into
+one "resolved" rate gives a number that looks precise and isn't.
 
-The four buckets are:
+Hence four buckets: relief (consumer got something), no_relief (worked to a
+conclusion, consumer got nothing), administrative (ended on process - no
+information, no response, withdrawn) and out_of_scope (referred elsewhere, no
+jurisdiction, information only), which is excluded from every denominator.
 
-``relief``
-    The consumer demonstrably got something - money, a refund, a cancelled
-    contract, repaired or replaced goods.
-``no_relief``
-    The complaint was worked to a substantive conclusion and the consumer got
-    nothing, including being told to sue.
-``administrative``
-    The complaint ended on process rather than merits - missing information,
-    no response, duplicate, withdrawn.
-``out_of_scope``
-    DCWP referred it elsewhere, had no jurisdiction, or only provided
-    information. These are excluded from rate denominators entirely.
-
-The mapping is a judgement call and is deliberately in one readable constant so
-a reviewer can disagree with a specific assignment and re-run.
+The mapping is a judgement call, kept in plain constants so you can disagree
+with one assignment and re-run.
 """
 
 from __future__ import annotations
@@ -107,16 +96,16 @@ def clean_complaints(raw: pd.DataFrame) -> pd.DataFrame:
     df["business_category"] = df["business_category"].fillna("Unknown")
     df["outcome_class"] = df["result"].map(classify_result)
 
-    # Days to disposition, where both ends are known. Negative values would
-    # indicate a data error rather than a fast resolution, so they are dropped.
+    # Days to disposition. A negative value is a data error, not a fast
+    # turnaround, so drop it.
     delta = (df["result_date"] - df["intake_date"]).dt.days
     df["days_to_result"] = delta.where(delta >= 0)
 
     df = df[df["record_id"].notna() & (df["record_id"] != "")]
 
-    # 134 record_ids appear twice, almost always because the same complaint was
-    # filed against two spellings of one business ("Paypal Inc" / "PayPal,
-    # Inc."). Keeping the first occurrence is correct: it is one complaint.
+    # 134 record_ids appear twice, nearly always one complaint filed against
+    # two spellings of a business ("Paypal Inc" / "PayPal, Inc."). Keep the
+    # first - it is one complaint.
     return df.drop_duplicates(subset=["record_id"])
 
 
@@ -128,9 +117,8 @@ def clean_charges(raw: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].astype("string").str.strip()
 
-    # `guilty` is a COUNT of counts found guilty, not a boolean - values run
-    # from 1 to 20 in the source. Treating it as a flag would badly overstate
-    # single-count cases and understate multi-count ones.
+    # `guilty` counts the counts found guilty (1-20 in the source), it is not
+    # a flag. Treat it as one and multi-count cases collapse to 1.
     df["charge_count"] = pd.to_numeric(df.get("charge_count"), errors="coerce").fillna(0).astype(int)
     df["guilty"] = pd.to_numeric(df.get("guilty"), errors="coerce").fillna(0).astype(int)
     df["guilty"] = df[["guilty", "charge_count"]].min(axis=1)
@@ -140,10 +128,9 @@ def clean_charges(raw: pd.DataFrame) -> pd.DataFrame:
 
     df = df[df["record_id"].notna() & (df["record_id"] != "")]
 
-    # `record_id` is the adjudication CASE id (e.g. "0001-2026-ADJC"), not a row
-    # key: one case carries a line per charge brought, 143,146 rows across 56,290
-    # cases. The grain is (case, charge). Deduplicating on record_id alone would
-    # silently discard ~60% of the charges in the dataset.
+    # `record_id` is the adjudication CASE id ("0001-2026-ADJC"), not a row key:
+    # one line per charge brought, 143,146 rows over 56,290 cases. Grain is
+    # (case, charge) - deduping on record_id alone drops ~60% of the charges.
     return df.drop_duplicates(subset=["record_id", "charge"])
 
 
@@ -173,7 +160,7 @@ def complaints_by_category(complaints: pd.DataFrame) -> pd.DataFrame:
     )
 
     out = totals.merge(pivot, on="business_category", how="left")
-    # Complaints that reached a decision on the merits, either way.
+    # Reached a decision on the merits, either way.
     out["substantive"] = out["relief"] + out["no_relief"]
     return out
 
@@ -192,10 +179,10 @@ def charges_by_category(charges: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_business_bridge(complaints: pd.DataFrame, charges: pd.DataFrame) -> pd.DataFrame:
-    """Businesses that appear in both datasets, joined on business_unique_id.
+    """Businesses in both datasets, joined on business_unique_id.
 
-    This is the link that makes the two sources one story: it answers whether a
-    business consumers complained about was ever actually charged.
+    The join that makes the two sources one story: was a business consumers
+    complained about ever actually charged?
     """
     comp = (
         complaints.dropna(subset=["business_unique_id"])

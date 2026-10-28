@@ -1,8 +1,7 @@
 """Paged reader for the NYC Open Data (Socrata) API.
 
-Socrata caps a single response at 50,000 rows, so every extract here is a
-sequence of ``$limit``/``$offset`` requests. Requests without an app token are
-throttled aggressively; set ``SOCRATA_APP_TOKEN`` to raise the ceiling.
+Socrata caps a response at 50k rows, so an extract is a sequence of
+$limit/$offset calls. Set SOCRATA_APP_TOKEN to avoid anonymous throttling.
 """
 
 from __future__ import annotations
@@ -23,7 +22,7 @@ BACKOFF_SECONDS = 2.0
 
 
 class SocrataError(RuntimeError):
-    """Raised when the API cannot be read after exhausting retries."""
+    """The API could not be read after all retries."""
 
 
 class SocrataClient:
@@ -69,11 +68,10 @@ class SocrataClient:
         order: str | None = None,
         max_rows: int | None = None,
     ) -> Iterator[list[dict[str, Any]]]:
-        """Yield successive pages of rows for a dataset.
+        """Yield pages of rows for a dataset.
 
-        ``order`` matters: Socrata does not guarantee a stable sort across
-        paged requests without one, which silently produces duplicate and
-        missing rows. Every caller should pass a unique-ish ordering column.
+        Always pass `order`. Socrata's sort isn't stable across paged requests
+        without one, and you get duplicate and missing rows with no warning.
         """
         url = BASE_URL.format(dataset_id=dataset_id)
         offset = 0

@@ -1,9 +1,9 @@
 """Command-line entry point.
 
-    python -m dcwp_pipeline run            # full pipeline
-    python -m dcwp_pipeline extract        # refresh the cached extract only
-    python -m dcwp_pipeline run --cached   # skip the API, use the cache
-    python -m dcwp_pipeline run --max-rows 5000   # quick smoke run
+    dcwp-pipeline run                  # full pipeline
+    dcwp-pipeline extract              # refresh the cached extract only
+    dcwp-pipeline run --cached         # skip the API, use the cache
+    dcwp-pipeline run --max-rows 5000  # quick smoke run
 """
 
 from __future__ import annotations
@@ -27,7 +27,11 @@ def configure_logging(verbose: bool) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="dcwp_pipeline", description=__doc__)
+    parser = argparse.ArgumentParser(
+        prog="dcwp-pipeline",
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("command", choices=["run", "extract", "validate", "analyse"])
     parser.add_argument("--config", type=Path, default=PROJECT_ROOT / "config" / "pipeline.json")
     parser.add_argument("--root", type=Path, default=PROJECT_ROOT)

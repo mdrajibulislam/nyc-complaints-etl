@@ -1,8 +1,8 @@
 {
   "_comment": [
-    "Thresholds here were set from the data, not from guesswork. Three of them",
-    "were tightened or loosened only after the first run failed and the cause",
-    "was investigated - see README, 'What the quality gate caught'."
+    "Thresholds come from the data, not from guesswork. Three were changed only",
+    "after the first run failed and the cause was tracked down - see README,",
+    "'What the quality gate caught'."
   ],
 
   "sources": {
@@ -46,7 +46,7 @@
   "quality_rules": {
     "complaints": [
       { "check": "row_count_min", "min": 50000, "severity": "error" },
-      { "_note": "134 ids repeat, from one complaint filed against two spellings of a business name. Known and handled in clean_complaints; alert if it grows.",
+      { "_note": "134 ids repeat: one complaint, two spellings of the business name. Handled in clean_complaints; alert if it grows.",
         "check": "unique", "column": "record_id", "max_duplicates": 300, "severity": "warn" },
       { "check": "not_null", "column": "record_id", "max_null_rate": 0.0, "severity": "error" },
       { "check": "not_null", "column": "intake_date", "max_null_rate": 0.01, "severity": "error" },
@@ -61,7 +61,7 @@
         "check": "unique_composite", "columns": ["record_id", "charge"], "max_duplicates": 20, "severity": "error" },
       { "check": "not_null", "column": "record_id", "max_null_rate": 0.0, "severity": "error" },
       { "check": "not_null", "column": "business_unique_id", "max_null_rate": 0.0, "severity": "error" },
-      { "_note": "Counts above 500 are real: per-unit construction and towing violations reach 54,681. The error bound catches corruption, the warn bound flags magnitude worth eyeballing.",
+      { "_note": "Counts above 500 are real - per-unit construction and towing violations reach 54,681. Error bound catches corruption, warn bound flags magnitude worth a look.",
         "check": "numeric_range", "column": "charge_count", "min": 0, "max": 100000, "max_violation_rate": 0.0, "severity": "error" },
       { "check": "numeric_range", "column": "charge_count", "min": 0, "max": 500, "max_violation_rate": 0.01, "severity": "warn" },
       { "check": "numeric_range", "column": "guilty", "min": 0, "max": 100000, "max_violation_rate": 0.0, "severity": "error" },

@@ -1,15 +1,14 @@
 -- Analysis queries against data/warehouse/dcwp.db
 --   sqlite3 data/warehouse/dcwp.db < sql/02_analysis.sql
 --
--- The Python layer produces the ranked report; these are the queries a
--- reviewer would write to interrogate it independently.
+-- The Python layer writes the ranked report. These are the queries for
+-- checking it independently.
 
 .headers on
 .mode column
 
 -- 1. Where do complaints die? Outcome mix for the ten busiest categories.
---    `administrative` means the case closed on process (no information, no
---    response, withdrawn) rather than on the merits.
+--    `administrative` = closed on process, not on the merits.
 SELECT
     business_category,
     COUNT(*)                                                      AS complaints,
@@ -24,8 +23,7 @@ LIMIT 10;
 
 
 -- 2. The enforcement gap: complaint volume against charges actually brought.
---    A category high on the left and low on the right is the thing worth
---    asking about.
+--    High on the left, low on the right is the interesting case.
 WITH c AS (
     SELECT business_category, COUNT(*) AS complaints
     FROM complaints GROUP BY business_category
@@ -48,9 +46,8 @@ ORDER BY cases_per_100_complaints ASC
 LIMIT 15;
 
 
--- 3. Businesses with repeat complaints that were never charged.
---    Ranked by complaint count; the administrative share says how many of
---    those complaints never reached a decision either way.
+-- 3. Businesses with repeat complaints that were never charged. The
+--    administrative share is how many never reached a decision either way.
 SELECT
     business_name,
     business_category,
@@ -64,9 +61,9 @@ ORDER BY complaints DESC
 LIMIT 20;
 
 
--- 4. Does a charged business see different complaint outcomes than an
---    uncharged one? Descriptive only - being charged is not random, so this
---    compares two self-selected groups and cannot support a causal claim.
+-- 4. Do charged businesses see different complaint outcomes than uncharged
+--    ones? Descriptive only - being charged isn't random, so these are two
+--    self-selected groups and no causal claim follows.
 SELECT
     CASE ever_charged WHEN 1 THEN 'charged' ELSE 'never charged' END AS cohort,
     COUNT(*)                                            AS businesses,
