@@ -66,10 +66,10 @@ needs no Python setup — `make` handles the virtualenv and dependencies.
 git clone https://github.com/<your-handle>/nys-code-sample.git
 cd nys-code-sample
 
-make smoke     # ~30s, 5,000 rows per source, end to end
-make run       # ~60s, full extract from the live API
-make test      # 20 unit tests
-make sql       # the same questions in SQL, against the warehouse
+make run ROWS=5000   # ~30s, truncated end to end
+make run             # ~60s, full extract from the live API
+make test            # 20 unit tests
+make report          # the findings, then the same questions in SQL
 ```
 
 No API key required. `uv.lock` is committed, so the dependency graph is
